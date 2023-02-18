@@ -1,0 +1,61 @@
+service: dynamo-sls-crud
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+	
+custom:
+  dynamodb:
+    start:
+      migrate: true
+      seed: true
+
+resources: 
+  Resources:
+    myTables:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: myTable
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+          - AttributeName: userId
+            KeyType: RANGE  
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+functions:
+  healthCheck:
+    handler: index.handler
+    events:
+      - http: 
+          path: /health
+          method: get
+  addUser:
+    handler: index.addUser
+    events:
+      - http: 
+          path: /adduser
+          method: post
+  updateUser:
+    handler: index.updateUser
+    events:
+      - http: 
+          path: /updateuser
+          method: post
+  viewUser:
+    handler: index.viewUser
+    events:
+      - http: 
+          path: /viewuser
+          method: get
+plugins:
+  - serverless-offline
+  - serverless-dynamodb-local
